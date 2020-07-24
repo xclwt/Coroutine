@@ -6,8 +6,9 @@
 #define COROUTINE_COROUTINE_H
 
 #include <ucontext.h>
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
+#include <cstdint>
 #include <vector>
 
 #define STACK_SIZE 1024 * 1024
@@ -20,98 +21,66 @@
 
 using namespace std;
 
-class Schdule;
+class Schedule;
+class Coroutine;
 
-typedef void (*co_func)(Schdule &S, void *args);
+void start_func(uint32_t low_addr, uint32_t high_addr);
+typedef void (*co_func)(Schedule &S, void *args);
 
 class Coroutine {
 public:
-    Coroutine(Schdule *S, co_func func, void *args){
-        co_start = func;
-        func_arg = args;
-        status = COROUTINE_READY;
-        stack = NULL;
-    }
+    ucontext_t ucontext{};
+    int status;
+    char* stack;
+    /*size of the memory allocated to save-stack*/
+    int cap;
+    /*size of memory used to save running stack*/
+    int size;
 
-    ~Coroutine(){
+    Coroutine(Schedule *S, co_func func, void *args);
 
-    }
+    ~Coroutine();
 
-
+    friend void start_func(uint32_t low_addr, uint32_t high_addr);
 
 private:
     co_func co_start;
     void *func_arg;
-    ucontext_t ucontext;
-    int status;
-    char *stack;
 
 };
 
 
-class Schdule {
+class Schedule {
 
 public:
-    Schdule(){
-        stack = new char[STACK_SIZE];
-        co_num = 0;
-        co_cap = COROUTINE_NUM;
-        running_id = -1;
-        co_list = vector<Coroutine *>(COROUTINE_NUM, NULL);
-        //co_list = new Coroutine* [COROUTINE_NUM];
-        //co_list = std::vector<Coroutine *>(COROUTINE_NUM);
-        //memset(co_list, 0, sizeof(Coroutine*) * COROUTINE_NUM);
-    }
+    Schedule();
 
-    ~Schdule(){
-        for (int i = 0; i < co_cap; ++i){
-            Coroutine *co = co_list[i];
+    ~Schedule();
 
-            if (co){
-                co->~Coroutine();
-            }
-        }
+    int coroutine_create(co_func func, void *args);
 
-        delete[] stack;
-        //delete[] co_list;
-        //co_list = NULL;
-    }
+    void coroutine_resume(int co_id);
 
-    int coroutine_create(co_func func, void *args){
-        Coroutine co(this, func, args);
+    void coroutine_yield();
 
-        if (co_num == co_cap){
-            co_list.push_back(&co);
-            ++co_num;
-            co_cap = co_list.capacity();
-        }else{
-            for (int i = 0; i < co_cap; ++i){
-                int co_id = (i + co_num) % co_cap;
-                if (!co_list[co_id]){
-                    co_list[co_id] = &co;
-                    ++co_num;
-                    return co_id;
-                }
-            }
-        }
-    }
+    int coroutine_status(int co_id);
 
-    void coroutine_resume(int co_id){
-        /*if called in non-main co, teminate*/
-        assert(this->running_id == -1);
+    int coroutine_running();
 
-        /*if called with illegal co_id, terminate*/
-        assert(co_id >= 0 && co_id < co_cap);
-    }
+    void save_stack(Coroutine *co, const char *top);
+
+    friend void start_func(uint32_t low_addr, uint32_t high_addr);
 
 private:
     char* stack;
-    ucontext_t main;
+    ucontext_t main{};
     int co_num;
     int co_cap;
     int running_id;
     vector<Coroutine *> co_list;
 };
+
+
 
 
 #endif //COROUTINE_COROUTINE_H
