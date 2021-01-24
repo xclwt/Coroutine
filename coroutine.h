@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstdint>
 #include <vector>
+#include <iostream>
 
 #define STACK_SIZE 1024 * 1024
 #define COROUTINE_NUM 16
@@ -24,7 +25,10 @@ using namespace std;
 class Schedule;
 class Coroutine;
 
+void save_stack(Coroutine *co, const char *top);
+
 void start_func(uint32_t low_addr, uint32_t high_addr);
+
 typedef void (*co_func)(Schedule &S, void *args);
 
 class Coroutine {
@@ -37,7 +41,7 @@ public:
     /*size of memory used to save running stack*/
     int size;
 
-    Coroutine(Schedule *S, co_func func, void *args);
+    Coroutine(co_func func, void *args);
 
     ~Coroutine();
 
@@ -65,9 +69,7 @@ public:
 
     int coroutine_status(int co_id);
 
-    int coroutine_running();
-
-    void save_stack(Coroutine *co, const char *top);
+    int coroutine_running() const;
 
     friend void start_func(uint32_t low_addr, uint32_t high_addr);
 

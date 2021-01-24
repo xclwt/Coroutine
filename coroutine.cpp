@@ -4,7 +4,7 @@
 
 #include "coroutine.h"
 
-Coroutine::Coroutine(Schedule *S, co_func func, void *args){
+Coroutine::Coroutine(co_func func, void *args){
         co_start = func;
         func_arg = args;
         cap = 0;
@@ -24,27 +24,23 @@ Schedule::Schedule(){
         co_cap = COROUTINE_NUM;
         running_id = -1;
         co_list = vector<Coroutine *>(COROUTINE_NUM, nullptr);
-        //co_list = new Coroutine* [COROUTINE_NUM];
-        //co_list = std::vector<Coroutine *>(COROUTINE_NUM);
-        //memset(co_list, 0, sizeof(Coroutine*) * COROUTINE_NUM);
     }
 
 Schedule::~Schedule(){
         for (int i = 0; i < co_cap; ++i){
             Coroutine *co = co_list[i];
 
-            if (co){
+            if (co != nullptr){
+                printf("fail%d\n",i);
                 co->~Coroutine();
             }
         }
 
         delete[] stack;
-        //delete[] co_list;
-        //co_list = NULL;
     }
 
 int Schedule::coroutine_create(co_func func, void *args){
-        auto *co = new Coroutine(this, func, args);
+        auto *co = new Coroutine(func, args);
 
         if (co_num == co_cap){
             co_list.push_back(co);
@@ -101,9 +97,8 @@ void Schedule::coroutine_resume(int co_id){
 void Schedule::coroutine_yield(){
         int co_id = this->running_id;
         Coroutine *co = this->co_list[co_id];
-
         co->status = COROUTINE_SUSPEND;
-        this->save_stack(co, this->stack + STACK_SIZE);
+        save_stack(co, this->stack + STACK_SIZE);
         this->running_id = -1;
 
         /*non-main co to main co*/
@@ -120,11 +115,11 @@ int Schedule::coroutine_status(int co_id){
         return this->co_list[co_id]->status;
     }
 
-int Schedule::coroutine_running(){
+int Schedule::coroutine_running() const{
         return this->running_id;
-    }
+}
 
-void Schedule::save_stack(Coroutine *co, const char *top){
+void save_stack(Coroutine *co, const char *top){
         char dummy;
 
         assert(top - &dummy <= STACK_SIZE);
@@ -146,7 +141,7 @@ void start_func(uint32_t low_addr, uint32_t high_addr){
 
     co->co_start(*S, co->func_arg);
 
-    co->~Coroutine();
+    delete co;
     S->co_num--;
     S->co_list[S->running_id] = nullptr;
     S->running_id = -1;

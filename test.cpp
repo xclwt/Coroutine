@@ -16,29 +16,29 @@ void foo(Schedule &S, void *args){
     }
 }
 
-void test(Schedule &S){
+void test(Schedule *S){
     struct args arg1 = {10};
     struct args arg2 = {100};
 
-    int co1 = S.coroutine_create((co_func)foo, &arg1);
-    int co2 = S.coroutine_create((co_func)foo, &arg2);
-    printf("%d\n%d\n",co1,co2);
+    int co1 = S->coroutine_create((co_func)foo, &arg1);
+    int co2 = S->coroutine_create((co_func)foo, &arg2);
 
     printf("main start\n");
-    while (S.coroutine_status(co1) && S.coroutine_status(co2)) {
+    while (S->coroutine_status(co1) && S->coroutine_status(co2)) {
         // 使用协程co1
-        S.coroutine_resume(co1);
+        S->coroutine_resume(co1);
         // 使用协程co2
-        S.coroutine_resume(co2);
+        S->coroutine_resume(co2);
     }
     printf("main end\n");
 }
 
 int main() {
-    Schedule S;
+    auto *S = new Schedule;
 
     test(S);
-    S.~Schedule();
-    printf("1\n");
+
+    delete S;
+
     return 0;
 }
