@@ -11,5 +11,7 @@ A simple coroutine lib implemented by C++, with reference to [@cloudwu](https://
 
 ### Note
 
-Don't use address on stack as buffer in async call! When one coroutine is suspended, the buffer on stack don't belong to it any more!
+- Don't use address on stack as buffer in async call! When one coroutine is suspended, the buffer on stack don't belong to it any more!
+
+- Don't use Block Syscall in coroutine.
 
