@@ -78,7 +78,7 @@ void Schedule::coroutine_resume(int co_id){
             this->running_id = co_id;
 
             auto S_ptr = (uintptr_t) this;
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
             makecontext(&co->ucontext, (void (*)()) start_func, 3, (uint32_t) S_ptr, (uint32_t) (S_ptr >> 32), co_id);
             printf("enter coroutine %d:", running_id);
 #else
@@ -94,7 +94,7 @@ void Schedule::coroutine_resume(int co_id){
 
             co->status = COROUTINE_RUNNING;
             this->running_id = co_id;
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
             printf("enter coroutine %d:", running_id);
 #endif
             swapcontext(&this->main, &co->ucontext);
@@ -145,7 +145,7 @@ void save_stack(Coroutine *co, const char *top){
     memcpy(co->stack, &dummy, co->size);
 }
 
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
 void start_func(uint32_t low_addr, uint32_t high_addr, int co_id)
 #else
 void start_func(uint32_t low_addr, uint32_t high_addr)
@@ -156,7 +156,7 @@ void start_func(uint32_t low_addr, uint32_t high_addr)
     Coroutine *co = S->co_list[S->running_id];
 
     co->co_start(*S, co->func_arg);
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
     printf("delete co%d\n", co_id);
 #endif
     delete co;

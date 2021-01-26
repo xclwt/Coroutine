@@ -23,7 +23,7 @@
 #define SAVED_STACK 0
 #define INDEPENDENT_STACK 1
 
-//#define COROUTINE_OUTPUT
+//#define COROUTINE_TEST_OUTPUT
 
 using namespace std;
 
@@ -32,7 +32,7 @@ class Coroutine;
 
 void save_stack(Coroutine *co, const char *top);
 
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
     void start_func(uint32_t low_addr, uint32_t high_addr, int);
 #else
     void start_func(uint32_t low_addr, uint32_t high_addr);
@@ -54,7 +54,7 @@ public:
     Coroutine(co_func func, void *args, int stack_type, int stack_size);
 
     ~Coroutine();
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
     friend void start_func(uint32_t low_addr, uint32_t high_addr, int);
 #else
     friend void start_func(uint32_t low_addr, uint32_t high_addr);
@@ -94,7 +94,7 @@ public:
 
     int coroutine_running() const;
 
-#ifdef COROUTINE_OUTPUT
+#ifdef COROUTINE_TEST_OUTPUT
     friend void start_func(uint32_t low_addr, uint32_t high_addr, int);
 #else
     friend void start_func(uint32_t low_addr, uint32_t high_addr);
