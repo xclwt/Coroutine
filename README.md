@@ -2,7 +2,7 @@
 
 ### Abstract
 
-A simple coroutine lib implemented by C++, with reference to [@cloudwu](https://github.com/cloudwu)'s [coroutine](https://github.com/cloudwu/coroutine).
+A coroutine library implemented by C++, supporting both coroutine with shared runtime stack and coroutine with independent runtime stack.
 
 ### TODO
 
@@ -16,3 +16,6 @@ A simple coroutine lib implemented by C++, with reference to [@cloudwu](https://
 
 - It's better to use Unblock Syscall than Block Syscall in coroutine.
 
+### Reference
+- [cloudwu/coroutine](https://github.com/cloudwu/coroutine)
+- [Tencent/libco](https://github.com/Tencent/libco) 
