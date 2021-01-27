@@ -23,7 +23,7 @@
 #define SAVED_STACK 0
 #define INDEPENDENT_STACK 1
 
-//#define COROUTINE_TEST_OUTPUT
+#define COROUTINE_TEST_OUTPUT
 
 using namespace std;
 
@@ -83,6 +83,9 @@ public:
 
     /* create a coroutine with shared runtime-stack */
     int coroutine_create(co_func func, void *args, int stack_type, int stack_size);
+
+    /* destroy a coroutine */
+    void coroutine_destroy(int co_id);
 
     /* resume the coroutine */
     void coroutine_resume(int co_id);

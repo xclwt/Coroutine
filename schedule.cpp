@@ -53,6 +53,14 @@ int Schedule::coroutine_create(co_func func, void *args, int stack_type, int siz
     }
 }
 
+void Schedule::coroutine_destroy(int co_id){
+#ifdef COROUTINE_TEST_OUTPUT
+    printf("delete coroutine %d:", co_id);
+#endif
+    delete this->co_list[co_id];
+    this->co_list[co_id] = nullptr;
+}
+
 void Schedule::coroutine_resume(int co_id){
     /*if called in non-main co, teminate*/
     assert(this->running_id == -1);
