@@ -71,7 +71,11 @@ void Schedule::coroutine_resume(int co_id){
 
     switch (co->status){
         case COROUTINE_READY: {
+#ifdef USE_SYS_UCONTEXT
             getcontext(&co->ucontext);
+#else
+            memset(&co->ucontext, 0, sizeof(co->ucontext));
+#endif
             if (co->type == SAVED_STACK){
                 co->ucontext.uc_stack.ss_sp = this->stack;
                 co->ucontext.uc_stack.ss_size = this->stack_size;
@@ -85,15 +89,23 @@ void Schedule::coroutine_resume(int co_id){
             co->status = COROUTINE_RUNNING;
             this->running_id = co_id;
 
-            auto S_ptr = (uintptr_t) this;
 #ifdef COROUTINE_TEST_OUTPUT
-            makecontext(&co->ucontext, (void (*)()) start_func, 3, (uint32_t) S_ptr, (uint32_t) (S_ptr >> 32), co_id);
             printf("enter coroutine %d:", running_id);
-#else
-            makecontext(&co->ucontext, (void (*)()) start_func, 2, (uint32_t) S_ptr, (uint32_t) (S_ptr >> 32));
 #endif
+
+#ifdef USE_SYS_UCONTEXT
+            auto S_ptr = (uintptr_t) this;
+            makecontext(&co->ucontext, (void (*)()) start_func, 2, (uint32_t) S_ptr, (uint32_t) (S_ptr >> 32));
+#else
+            make_ctx(&co->ucontext, (co_start)start_func, this);
+#endif
+
             /*main co to non-main co*/
+#ifdef USE_SYS_UCONTEXT
             swapcontext(&this->main, &co->ucontext);
+#else
+            swap_ctx(&this->main, &co->ucontext);
+#endif
             break;
         }
         case COROUTINE_SUSPEND:{
@@ -102,10 +114,16 @@ void Schedule::coroutine_resume(int co_id){
 
             co->status = COROUTINE_RUNNING;
             this->running_id = co_id;
+
 #ifdef COROUTINE_TEST_OUTPUT
             printf("enter coroutine %d:", running_id);
 #endif
+
+#ifdef USE_SYS_UCONTEXT
             swapcontext(&this->main, &co->ucontext);
+#else
+            swap_ctx(&this->main, &co->ucontext);
+#endif
             break;
         }
     }
@@ -121,8 +139,12 @@ void Schedule::coroutine_yield(){
 
     this->running_id = -1;
 
+#ifdef USE_SYS_UCONTEXT
     /*non-main co to main co*/
     swapcontext(&co->ucontext, &this->main);
+#else
+    swap_ctx(&co->ucontext, &this->main);
+#endif
 }
 
 int Schedule::coroutine_status(int co_id){
@@ -153,23 +175,24 @@ void save_stack(Coroutine *co, const char *top){
     memcpy(co->stack, &dummy, co->size);
 }
 
-#ifdef COROUTINE_TEST_OUTPUT
-void start_func(uint32_t low_addr, uint32_t high_addr, int co_id)
-#else
-void start_func(uint32_t low_addr, uint32_t high_addr)
-#endif
-{
+#ifdef USE_SYS_UCONTEXT
+void start_func(uint32_t low_addr, uint32_t high_addr){
     uintptr_t S_ptr = ((uintptr_t)high_addr << 32) + (uintptr_t)low_addr;
+#else
+void start_func(void *S_ptr){
+#endif
     auto *S = (Schedule *)S_ptr;
     Coroutine *co = S->co_list[S->running_id];
 
     co->co_start(*S, co->func_arg);
+    coctx *next = co->ucontext.uc_link;
 #ifdef COROUTINE_TEST_OUTPUT
-    printf("delete co%d\n", co_id);
+    printf("delete co%d\n", S->running_id);
 #endif
     delete co;
     S->co_num--;
     S->co_list[S->running_id] = nullptr;
     S->running_id = -1;
+    __set_ctx(next);
 }
 

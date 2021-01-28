@@ -2,6 +2,7 @@
 // Created by xclwt on 2020/7/23.
 //
 
+
 #ifndef COROUTINE_COROUTINE_H
 #define COROUTINE_COROUTINE_H
 
@@ -11,6 +12,7 @@
 #include <cstdint>
 #include <vector>
 #include <iostream>
+#include "coctx.h"
 
 #define STACK_SIZE 1024 * 1024
 #define COROUTINE_NUM 16
@@ -25,24 +27,34 @@
 
 #define COROUTINE_TEST_OUTPUT
 
+//#define USE_SYS_UCONTEXT
+
 using namespace std;
 
 class Schedule;
 class Coroutine;
 
+class coctx;
+
 void save_stack(Coroutine *co, const char *top);
 
-#ifdef COROUTINE_TEST_OUTPUT
-    void start_func(uint32_t low_addr, uint32_t high_addr, int);
+#ifdef USE_SYS_UCONTEXT
+void start_func(uint32_t low_addr, uint32_t high_addr);
 #else
-    void start_func(uint32_t low_addr, uint32_t high_addr);
+void start_func(void *S);
 #endif
 
 typedef void (*co_func)(Schedule &S, void *args);
 
+//typedef void (*co_start)(Schedule *S);
+
 class Coroutine {
 public:
+#ifdef USE_SYS_UCONTEXT
     ucontext_t ucontext{};
+#else
+    coctx ucontext{};
+#endif
     int status;
     char* stack;
     /*size of the memory allocated to save-stack*/
@@ -54,11 +66,13 @@ public:
     Coroutine(co_func func, void *args, int stack_type, int stack_size);
 
     ~Coroutine();
-#ifdef COROUTINE_TEST_OUTPUT
-    friend void start_func(uint32_t low_addr, uint32_t high_addr, int);
-#else
+
+#ifdef USE_SYS_UCONTEXT
     friend void start_func(uint32_t low_addr, uint32_t high_addr);
+#else
+    friend void start_func(void *S);
 #endif
+
 
 private:
     co_func co_start;
@@ -70,6 +84,11 @@ private:
 class Schedule {
 
 public:
+#ifdef USE_SYS_UCONTEXT
+    ucontext_t main{};
+#else
+    coctx main{};
+#endif
     /* default schedule */
     Schedule();
 
@@ -97,23 +116,20 @@ public:
 
     int coroutine_running() const;
 
-#ifdef COROUTINE_TEST_OUTPUT
-    friend void start_func(uint32_t low_addr, uint32_t high_addr, int);
-#else
+#ifdef USE_SYS_UCONTEXT
     friend void start_func(uint32_t low_addr, uint32_t high_addr);
+#else
+    friend void start_func(void *S);
 #endif
+
 
 private:
     char* stack;
-    ucontext_t main{};
     int co_num;
     int co_cap;
     int stack_size;
     int running_id;
     vector<Coroutine *> co_list;
 };
-
-
-
 
 #endif //COROUTINE_COROUTINE_H
