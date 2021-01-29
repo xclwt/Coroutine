@@ -20,7 +20,9 @@ Schedule::~Schedule(){
         Coroutine *co = co_list[i];
 
         if (co != nullptr){
+#ifdef COROUTINE_TEST_OUTPUT
             printf("terminate %d\n",i);
+#endif
             co->~Coroutine();
         }
     }
@@ -187,20 +189,31 @@ void start_func(void *S_ptr){
     co->co_start(*S, co->func_arg);
 
 #ifndef USE_UC_LINK
+#ifndef USE_SYS_UCONTEXT
     coctx *next = co->ucontext.uc_link;
+#endif
 #endif
 
 #ifdef COROUTINE_TEST_OUTPUT
     printf("delete co%d\n", S->running_id);
 #endif
 
-    delete co;
+    if (co->type == INDEPENDENT_STACK){
+        register long rsp asm ("rsp");
+
+        co->size = co->stack + co->cap - (char *)rsp;
+        memcpy(S->stack + S->stack_size - co->size, (char *)rsp, co->size);
+        rsp = (long)S->stack + S->stack_size - co->size;
+    }
+
+    S->coroutine_destroy(S->running_id);
     S->co_num--;
-    S->co_list[S->running_id] = nullptr;
     S->running_id = -1;
 
 #ifndef USE_UC_LINK
+#ifndef USE_SYS_UCONTEXT
     __set_ctx(next);
+#endif
 #endif
 }
 

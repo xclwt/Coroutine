@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <bits/types/stack_t.h>
-//#include "coroutine.h"
 
 //callee-preserved reg
 #define R15 0
@@ -27,8 +26,6 @@
 #define RBX 7
 #define RSP 8
 
-//class Schedule;
-
 typedef void (*co_start)(void *s);
 
 typedef struct coctx{
@@ -36,8 +33,6 @@ typedef struct coctx{
     struct coctx *uc_link;
     stack_t uc_stack;
 }coctx;
-
-//typedef struct coctx coctx;
 
 extern "C" {
 extern void swap_ctx(coctx *src, coctx *dst) asm("swap_ctx");

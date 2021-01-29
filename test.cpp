@@ -1,3 +1,9 @@
+//#define COROUTINE_TEST_OUTPUT
+
+//#define USE_UC_LINK
+
+//#define USE_SYS_UCONTEXT
+
 #include <iostream>
 #include "coroutine.h"
 

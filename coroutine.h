@@ -25,12 +25,6 @@
 #define SAVED_STACK 0
 #define INDEPENDENT_STACK 1
 
-#define COROUTINE_TEST_OUTPUT
-
-//#define USE_UC_LINK
-
-//#define USE_SYS_UCONTEXT
-
 using namespace std;
 
 class Schedule;
@@ -47,8 +41,6 @@ void start_func(void *S);
 #endif
 
 typedef void (*co_func)(Schedule &S, void *args);
-
-//typedef void (*co_start)(Schedule *S);
 
 class Coroutine {
 public:

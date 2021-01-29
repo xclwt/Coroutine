@@ -25,5 +25,7 @@ Coroutine::Coroutine(co_func func, void *args, int stack_type, int stack_size){
 
 Coroutine::~Coroutine(){
     delete[] stack;
+#ifdef COROUTINE_TEST_OUTPUT
     printf("delete successfully.\n");
+#endif
 }
