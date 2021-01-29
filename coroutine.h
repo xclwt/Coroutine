@@ -27,6 +27,8 @@
 
 #define COROUTINE_TEST_OUTPUT
 
+//#define USE_UC_LINK
+
 //#define USE_SYS_UCONTEXT
 
 using namespace std;

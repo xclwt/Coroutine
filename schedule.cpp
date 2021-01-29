@@ -185,14 +185,22 @@ void start_func(void *S_ptr){
     Coroutine *co = S->co_list[S->running_id];
 
     co->co_start(*S, co->func_arg);
+
+#ifndef USE_UC_LINK
     coctx *next = co->ucontext.uc_link;
+#endif
+
 #ifdef COROUTINE_TEST_OUTPUT
     printf("delete co%d\n", S->running_id);
 #endif
+
     delete co;
     S->co_num--;
     S->co_list[S->running_id] = nullptr;
     S->running_id = -1;
+
+#ifndef USE_UC_LINK
     __set_ctx(next);
+#endif
 }
 
