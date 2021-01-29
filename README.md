@@ -18,6 +18,8 @@ A coroutine library implemented by C++, supporting both coroutine with shared ru
       * [coroutine_yield](#coroutine_yield)
       * [coroutine_status](#coroutine_status)
       * [coroutine_running](#coroutine_running)
+   * [Test Examples](#test-examples)
+   * [Performance](#performance)
    * [TODO](#todo)
    * [Suggestions](#Suggestions)
    * [Reference](#Reference)
@@ -87,7 +89,32 @@ This method returns the running coroutine id.
 
 ## Testing Example
 
-The test example is in test.cpp, and you can get more output of testing information by `#define COROUTINE_TEST_OUTPUT`in `coroutine.h`.
+The test example is in test.cpp, and you can get more output of testing information by `#define COROUTINE_TEST_OUTPUT`.
+
+## Performance
+
+This coroutine library provides two version of ucontext, The first one is defined in `ucontext.h`(glibc), and the second one defined in `coctx.h`(no FPU and MXCSR) the default choice, You can choose the first one by `#define USE_SYS_UCONTEXT`.
+
+All non-main coroutine will return to main coroutine at the end of the run， `coctx` provides two mechanisms to return to the main coroutine. You can choose one of them by `#define USE_UC_LINK`or not.
+
+Here are the performance testing data(switch 100,000,000 times):
+
+```
+ndef USE_SYS_UCONTEXT, def USE_UC_LINK, shared stack: 7.175s
+
+ndef USE_SYS_UCONTEXT, ndef USE_UC_LINK, shared stack: 7.230s
+
+def USE_SYS_UCONTEXT, shared stack: 91.81s
+
+ndef USE_SYS_UCONTEXT, def USE_UC_LINK, independent stack: 5.749s
+
+ndef USE_SYS_UCONTEXT, ndef USE_UC_LINK, independent stack: 5.697s
+
+ndef USE_SYS_UCONTEXT independent stack: 89.52s
+
+```
+
+
 
 ## TODO
 
@@ -108,3 +135,5 @@ The test example is in test.cpp, and you can get more output of testing informat
 
 - [cloudwu/coroutine](https://github.com/cloudwu/coroutine)
 - [Tencent/libco](https://github.com/Tencent/libco) 
+- [GNU C Library](https://code.woboq.org/userspace/glibc/)
+
