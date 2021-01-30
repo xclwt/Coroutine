@@ -1,5 +1,7 @@
 # Coroutine
 
+中文文档：[一个C++协程库的实现与优化](https://blanca.world/archives/%E5%8D%9A%E6%96%8714-%E4%B8%80%E4%B8%AAc++%E5%8D%8F%E7%A8%8B%E5%BA%93%E7%9A%84%E5%AE%9E%E7%8E%B0%E4%B8%8E%E4%BC%98%E5%8C%96/)
+
 ## Abstract
 
 
@@ -18,7 +20,7 @@ A coroutine library implemented by C++, supporting both coroutine with shared ru
       * [coroutine_yield](#coroutine_yield)
       * [coroutine_status](#coroutine_status)
       * [coroutine_running](#coroutine_running)
-   * [Test Examples](#test-examples)
+   * [Testing Examples](#testing-examples)
    * [Performance](#performance)
    * [TODO](#todo)
    * [Suggestions](#Suggestions)
@@ -39,6 +41,8 @@ The first method creates a schedule with a 1MB runtime stack. All shared-stack c
 
 The second method creates a schedule with a runtime stack whose size is determined by `stack_size`.
 
+Even if all the coroutines managed by the schedule have independent runtime  stacks, you must create a shared stack of at least 100 bytes in the schedule. In my design, all the coroutines will destroy their own stacks at the end of running,  and the coroutines with independent runtime  stack need to switch the runtime stack to the shared stack to destroy their own independent runtime stacks .
+
 ### coroutine_create
 
 ```c++
@@ -52,6 +56,14 @@ The first method creates a coroutine with shared runtime stack, it equals to: `S
 The second method creates a coroutine with shared runtime stack when `stack_type` is `SAVED_STACK`. `stack_size` determines the initial size of the memory saving coroutine's runtimestack, and the memory will be dynamically reallocated when the coroutine is suspended, so `0` is recomended for `stack_size`.
 
 The second method creates a coroutine with independent runtime stack when `stack_type` is `INDEPENDENT_STACK`. `stack_size` determines the size(Bytes) of independent runtime stack.
+
+### coroutine_destroy
+
+```c++
+void Schedule::coroutine_destroy(int co_id);
+```
+
+This method will destroy the coroutine appointed by `co_id`.
 
 ### coroutine_resume
 
@@ -110,17 +122,13 @@ ndef USE_SYS_UCONTEXT, def USE_UC_LINK, independent stack: 5.749s
 
 ndef USE_SYS_UCONTEXT, ndef USE_UC_LINK, independent stack: 5.697s
 
-ndef USE_SYS_UCONTEXT independent stack: 89.52s
+def USE_SYS_UCONTEXT independent stack: 89.52s
 
 ```
 
 
 
 ## TODO
-
-- [x] Add coroutine with independent runtime stack.
-
-- [ ] Optimize the performance of switching ucontext.
 
 - [ ] Try to add support to Block Syscall(maybe just read() and write()).
 

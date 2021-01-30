@@ -6,7 +6,6 @@
 .globl __set_ctx
 .type  start_ctx, @function
 start_ctx:
-    //movq %rbx, %rsp
     movq (%rsp), %rdi
 
     call __set_ctx

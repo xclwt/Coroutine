@@ -3,7 +3,6 @@
 //
 
 .globl swap_ctx
-.globl change_stack
 .type  swap_ctx, @function
 
 swap_ctx:
@@ -36,3 +35,4 @@ swap_ctx:
 	pushq 48(%rsi)
 
 	ret
+	
