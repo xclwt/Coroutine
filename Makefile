@@ -2,6 +2,7 @@
 
 #DEFS = -DUSE_SYS_UCONTEXT
 #DEFS = -DUSE_UC_LINK
+#DEFS = -DCOROUTINE_TEST_OUTPUT
 
 C_SRC = $(shell find . -name "*.cpp")
 C_SRC := $(filter-out ./co_performance.cpp, $(C_SRC))

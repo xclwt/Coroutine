@@ -12,15 +12,20 @@ start_ctx:
 
 __set_ctx:
     movq 32(%rdi), %rbp
-    movq 64(%rdi), %rsp
+    movq 96(%rdi), %rsp
     movq (%rdi), %r15
     movq 8(%rdi), %r14
     movq 16(%rdi), %r13
     movq 24(%rdi), %r12
-    movq 40(%rdi), %rdi
-    movq 56(%rdi), %rbx
+    movq 48(%rdi), %rcx
+    movq 56(%rdi), %rdx
+    movq 64(%rdi), %r8
+    movq 72(%rdi), %r9
+    movq 88(%rdi), %rbx
 
     leaq 8(%rsp), %rsp
-    pushq 48(%rdi)
+	pushq 80(%rdi)
+	
+	#movq 40(%rdi), %rdi
 
     ret
