@@ -14,28 +14,22 @@
 #define R14 1
 #define R13 2
 #define R12 3
-
-
 #define RBP 4
 
 //argument
 #define RDI 5
-#define RCX 6
-#define RDX 7
-#define R8 8
-#define R9 9
 
 //ret addr
-#define RET 10
+#define RET 6
 
 //callee-preserved reg
-#define RBX 11
-#define RSP 12
+#define RBX 7
+#define RSP 8
 
 typedef void (*co_start)(void *s);
 
 typedef struct coctx{
-    void *regs[13];
+    void *regs[9];
     struct coctx *uc_link;
     stack_t uc_stack;
 }coctx;
